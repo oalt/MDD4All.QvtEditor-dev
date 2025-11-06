@@ -68,7 +68,7 @@ jobs:
             }
 
       - name: Restore Packages
-        run: nuget restore ./src/Plugin/${{env:SOLUTION_NAME}}
+        run: nuget restore ./src/Plugin/${{env.SOLUTION_NAME}}
 
       - name: Build Solution
         run: msbuild.exe /p:configuration=Release /p:platform='Any CPU' /p:installerFileVersion=${{env.VERSION}} .\src\${{env.SOLUTION_NAME}}
