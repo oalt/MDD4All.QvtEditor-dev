@@ -18,6 +18,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
@@ -73,18 +78,25 @@ jobs:
       - name: Build Solution
         run: msbuild.exe /p:configuration=Release /p:platform='Any CPU' /p:installerFileVersion=${{env.VERSION}} .\src\${{env.SOLUTION_NAME}}
 
-#      - name: Rename MSI file and copy results to output directory
-#        shell: pwsh
-#        run: |
-#            mkdir output
-#            cd src\Plugin\Setup\bin\Release
-#            ren FMC4SE-Plugin-Setup.msi FMC4SE-Plugin-Setup_${{env.VERSION}}.msi
-#            cd $env:GITHUB_WORKSPACE
-#            xcopy /y .\src\Plugin\Setup\bin\Release\*.msi output\
-            
-#      - name: Upload FMC4SE Plugin artifact
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: FMC4SE-Plugin-Setup_${{env.VERSION}}
-#          path: output\*.msi
-         
+      - name: Create MSI installer file
+        shell: pwsh
+        run: |
+            cd src\MDD4All.QvtEditor.EaPlugin\src\Setup\
+            dotnet build Setup.wixproj -p:ProductVersion=${{env.VERSION}} -c Release
+
+      - name: Rename MSI file and copy results to output directory
+        shell: pwsh
+        run: |
+            cd $env:GITHUB_WORKSPACE
+            mkdir output
+            cd src\MDD4All.QvtEditor.EaPlugin\src\Setup\bin\Release
+            ren Setup.msi QVT-Editor-Plugin-Setup_${{env.VERSION}}.msi
+            cd $env:GITHUB_WORKSPACE
+            xcopy /y .\src\MDD4All.QvtEditor.EaPlugin\src\Setup\bin\Release\*.msi output\
+
+      - name: Upload QVT Editor Plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QVT-Editor-Plugin-Setup_${{env.VERSION}}
+          path: output\*.msi
+
